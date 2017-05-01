@@ -10,10 +10,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sashok.task_.Answer.Answer;
+import com.google.gson.Gson;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.io.IOException;
+import java.io.InputStream;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class LoginActivity extends AppCompatActivity {
     private TextInputEditText inputLogin;
@@ -65,24 +70,35 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void makeLogin(String login, String password) {
-        Call<Answer> answerCall = MyApplication.getServiceApi().Authenticate(login, password);
-        answerCall.enqueue(new Callback<Answer>() {
+        //Observable<Answer> answerCall = MyApplication.getServiceApi().Authenticate(login, password);
+        Observable<Answer> myAnswer = Observable.create(new Observable.OnSubscribe<Answer>() {
             @Override
-            public void onResponse(Call<Answer> call, Response<Answer> response) {
-                if (response.body().getError() == null) {
-                    onLoginSuccess(response.body().getData().getSessionKey());
-                } else {
-                    onLoginError(response.body().getError().getErrorMessage());
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Answer> call, Throwable t) {
-                Toast.makeText(getBaseContext(), "Error", Toast.LENGTH_LONG).show();
+            public void call(Subscriber<? super Answer> subscriber) {
+                subscriber.onNext(fromJsonToAnswer());
             }
         });
+        myAnswer.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Answer>() {
+            @Override
+            public void onCompleted() {
 
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                onLoginError("Error..no internet connection maybe");
+            }
+
+            @Override
+            public void onNext(Answer answer) {
+                if (answer.getError() == null) {
+                    onLoginSuccess(answer.getData().getSessionKey());
+                } else {
+                    onLoginError(answer.getError().getErrorMessage());
+
+                }
+
+            }
+        });
     }
 
     public void onLoginSuccess(String sKey) {
@@ -118,5 +134,36 @@ public class LoginActivity extends AppCompatActivity {
             inputPassword.setError(null);
         }
         return valid;
+    }
+
+    public String loadJSONFromAsset(String file_name) {
+        String json = null;
+        try {
+
+            InputStream is = getAssets().open(file_name);
+
+            int size = is.available();
+
+            byte[] buffer = new byte[size];
+
+            is.read(buffer);
+
+            is.close();
+
+            json = new String(buffer, "UTF-8");
+
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
+
+    }
+
+    public Answer fromJsonToAnswer() {
+        String json = loadJSONFromAsset("login_answer.json");
+        Gson gson = new Gson();
+        return gson.fromJson(json, Answer.class);
     }
 }

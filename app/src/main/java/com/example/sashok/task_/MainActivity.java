@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
         viewStub = (ViewStub) findViewById(R.id.viewStub);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.VISIBLE);
-
         getAllCategories();}
 
     public void getAllCategories() {
