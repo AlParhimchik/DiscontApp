@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">App_Discont</string>
+    <string name="login_text">Имя пользователя</string>
+    <string name="password_text">Пароль</string>
+    <string name="enter_text">Войти</string>
+    <string name="registration_text">Зарегистрироваться</string>
+    <string name="registration_btn">Регистрация</string>
+    <string name="confirm_password">Подтверждение пароля</string>
+    <string name="phone">+375(__)______</string>
+    <string name="choose_categories">Пожалуйста,выберите интересующие Вас товары</string>
+</resources>
